@@ -109,11 +109,10 @@ typedef void (*voidFuncPtrArg)(void*);
 
 typedef struct {
   uint8_t mode;
-  voidFuncPtr fn;
-  void* arg;
+  std::function<void()> fn;
 } interrupt_handler_t;
 
-static interrupt_handler_t interrupt_handlers[16] = { {0, 0, 0}, };
+static interrupt_handler_t interrupt_handlers[16] = { {0, nullptr}, };
 static uint32_t interrupt_reg = 0;
 
 void ICACHE_RAM_ATTR interrupt_handler(void *arg, void *frame)
@@ -137,46 +136,36 @@ void ICACHE_RAM_ATTR interrupt_handler(void *arg, void *frame)
           // to make ISR compatible to Arduino AVR model where interrupts are disabled
           // we disable them before we call the client ISR
           esp8266::InterruptLock irqLock; // stop other interrupts
-      if (handler->arg)
-      {
-        ((voidFuncPtrArg)handler->fn)(handler->arg);
-      }
-      else
-      {
-        handler->fn();
-      }
+      handler->fn();
     }
   }
   ETS_GPIO_INTR_ENABLE();
 }
 
 extern void __attachInterruptArg(uint8_t pin, voidFuncPtrArg userFunc, void* arg, int mode) {
-  // #5780
-  // https://github.com/esp8266/esp8266-wiki/wiki/Memory-Map
-  if ((uint32_t)userFunc >= 0x40200000)
-  {
-    // ISR not in IRAM
-    ::printf((PGM_P)F("ISR not in IRAM!\r\n"));
-    abort();
-  }
+	// #5780
+	// https://github.com/esp8266/esp8266-wiki/wiki/Memory-Map
+	if ((uint32_t)userFunc >= 0x40200000)
+	{
+		// ISR not in IRAM
+		::printf((PGM_P)F("ISR not in IRAM!\r\n"));
+		abort();
+	}
 
-  if(pin < 16) {
-    ETS_GPIO_INTR_DISABLE();
-    interrupt_handler_t* handler = &interrupt_handlers[pin];
-    handler->mode = mode;
-    handler->fn = (voidFuncPtr)userFunc;
-    handler->arg = arg;
-    interrupt_reg |= (1 << pin);
-    GPC(pin) &= ~(0xF << GPCI);//INT mode disabled
-    GPIEC = (1 << pin); //Clear Interrupt for this pin
-    GPC(pin) |= ((mode & 0xF) << GPCI);//INT mode "mode"
-    ETS_GPIO_INTR_ATTACH(interrupt_handler, &interrupt_reg);
-    ETS_GPIO_INTR_ENABLE();
-  }
+	attachInterrupt(pin, [userFunc, arg]() { userFunc(arg); }, mode);
 }
 
 extern void __attachInterrupt(uint8_t pin, voidFuncPtr userFunc, int mode ) {
-  __attachInterruptArg(pin, (voidFuncPtrArg)userFunc, 0, mode);
+	// #5780
+	// https://github.com/esp8266/esp8266-wiki/wiki/Memory-Map
+	if ((uint32_t)userFunc >= 0x40200000)
+	{
+		// ISR not in IRAM
+		::printf((PGM_P)F("ISR not in IRAM!\r\n"));
+		abort();
+	}
+
+	attachInterrupt(pin, [userFunc]() { userFunc(); }, mode);
 }
 
 extern void __detachInterrupt(uint8_t pin) {
@@ -188,14 +177,9 @@ extern void __detachInterrupt(uint8_t pin) {
     interrupt_handler_t* handler = &interrupt_handlers[pin];
     handler->mode = 0;
     handler->fn = nullptr;
-    handler->arg = nullptr;
     if (interrupt_reg)
       ETS_GPIO_INTR_ENABLE();
   }
-}
-
-extern interrupt_handler_t* __getInterruptHandler(uint8_t pin) {
-	return (pin < 16) ? &interrupt_handlers[pin] : nullptr;
 }
 
 extern void __resetPins() {
@@ -219,7 +203,22 @@ extern void pinMode(uint8_t pin, uint8_t mode) __attribute__ ((weak, alias("__pi
 extern void digitalWrite(uint8_t pin, uint8_t val) __attribute__ ((weak, alias("__digitalWrite")));
 extern int digitalRead(uint8_t pin) __attribute__ ((weak, alias("__digitalRead"), nothrow));
 extern void attachInterrupt(uint8_t pin, voidFuncPtr handler, int mode) __attribute__ ((weak, alias("__attachInterrupt")));
-extern void attachInterruptArg(uint8_t pin, voidFuncPtrArg handler, void* arg, int mode) __attribute__ ((weak, alias("__attachInterruptArg")));
 extern void detachInterrupt(uint8_t pin) __attribute__ ((weak, alias("__detachInterrupt")));
+extern void attachInterruptArg(uint8_t pin, voidFuncPtrArg handler, void* arg, int mode) __attribute__((weak, alias("__attachInterruptArg")));
 
 };
+
+extern void attachInterrupt(uint8_t pin, std::function<void()> userFunc, int mode) {
+	if (pin < 16) {
+		ETS_GPIO_INTR_DISABLE();
+		interrupt_handler_t* handler = &interrupt_handlers[pin];
+		handler->mode = mode;
+		handler->fn = userFunc;
+		interrupt_reg |= (1 << pin);
+		GPC(pin) &= ~(0xF << GPCI);//INT mode disabled
+		GPIEC = (1 << pin); //Clear Interrupt for this pin
+		GPC(pin) |= ((mode & 0xF) << GPCI);//INT mode "mode"
+		ETS_GPIO_INTR_ATTACH(interrupt_handler, &interrupt_reg);
+		ETS_GPIO_INTR_ENABLE();
+	}
+}

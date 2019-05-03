@@ -182,9 +182,8 @@ void shiftOut(uint8_t dataPin, uint8_t clockPin, uint8_t bitOrder, uint8_t val);
 uint8_t shiftIn(uint8_t dataPin, uint8_t clockPin, uint8_t bitOrder);
 
 void attachInterrupt(uint8_t pin, void (*)(void), int mode);
-void attachInterruptArg(uint8_t pin, void (*)(void*), void * arg, int mode);
 void detachInterrupt(uint8_t pin);
-void attachInterruptArg(uint8_t pin, void (*)(void*), void* arg, int mode);
+void attachInterruptArg(uint8_t pin, void (*)(void*), void * arg, int mode);
 
 void preinit(void);
 void setup(void);
@@ -225,6 +224,7 @@ void optimistic_yield(uint32_t interval_us);
 #include <algorithm>
 #include <cstdlib>
 #include <cmath>
+#include <functional>
 
 using std::min;
 using std::max;
@@ -264,6 +264,8 @@ void setTZ(const char* tz);
 
 void configTime(int timezone, int daylightOffset_sec, const char* server1,
     const char* server2 = nullptr, const char* server3 = nullptr);
+
+void attachInterrupt(uint8_t pin, std::function<void()>, int mode);
 
 void configTime(const char* tz, const char* server1,
     const char* server2 = nullptr, const char* server3 = nullptr);

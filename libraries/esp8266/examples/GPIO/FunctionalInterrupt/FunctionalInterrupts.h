@@ -1,8 +1,6 @@
 #ifndef FUNCTIONALINTERRUPTS_H
 #define FUNCTIONALINTERRUPTS_H
 
-#include <stddef.h>
-#include <stdint.h>
 #include <functional>
 
 // Structures for communication
@@ -14,23 +12,15 @@ struct InterruptInfo {
 	uint32_t micro = 0;
 };
 
-struct FunctionInfo {
-    std::function<void(void)> reqFunction = nullptr;
-	std::function<void(InterruptInfo)> reqScheduledFunction = nullptr;
-};
-
 struct ArgStructure {
 	~ArgStructure()
 	{
-		delete functionInfo;
 		delete interruptInfo;
 	}
 	InterruptInfo* interruptInfo = nullptr;
-	FunctionInfo* functionInfo = nullptr;
+	std::function<void(InterruptInfo*)> reqScheduledFunction;
 };
 
-void attachInterrupt(uint8_t pin, std::function<void(void)> intRoutine, int mode);
-void attachScheduledInterrupt(uint8_t pin, std::function<void(InterruptInfo)> scheduledIntRoutine, int mode);
-void detachFunctionalInterrupt(uint8_t pin);
+void attachScheduledInterrupt(uint8_t pin, std::function<void(InterruptInfo*)> scheduledIntRoutine, int mode);
 
 #endif //INTERRUPTS_H
