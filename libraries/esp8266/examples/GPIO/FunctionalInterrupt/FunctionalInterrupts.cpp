@@ -1,27 +1,28 @@
 #include "FunctionalInterrupts.h"
 #include <Schedule.h>
 #include <Arduino.h>
+#include <memory>
 
-void ICACHE_RAM_ATTR interruptFunctional(const ArgStructure& localArg)
-{
-	if (localArg.reqScheduledFunction)
-	{
-		if (localArg.interruptInfo)
-		{
-			localArg.interruptInfo->value = digitalRead(localArg.interruptInfo->pin);
-			localArg.interruptInfo->micro = micros();
-		}
-		schedule_function([arg = localArg]() { arg.reqScheduledFunction(arg.interruptInfo); });
-	}
+void ICACHE_RAM_ATTR interruptFunctional(const ArgStructure& localArg) {
+  if (localArg.reqScheduledFunction) {
+    if (localArg.interruptInfo) {
+      localArg.interruptInfo->value = digitalRead(localArg.interruptInfo->pin);
+      localArg.interruptInfo->micro = micros();
+    }
+    schedule_function(
+      [reqScheduledFunction = localArg.reqScheduledFunction,
+                         interruptInfo = *localArg.interruptInfo]() {
+      reqScheduledFunction(interruptInfo);
+    });
+  }
 }
 
-void attachScheduledInterrupt(uint8_t pin, std::function<void(InterruptInfo*)> scheduledIntRoutine, int mode)
-{
-	InterruptInfo* ii = new InterruptInfo(pin);
+void attachScheduledInterrupt(uint8_t pin, std::function<void(const InterruptInfo&)> scheduledIntRoutine, int mode) {
+  std::shared_ptr<ArgStructure> arg(new ArgStructure());
+  arg->interruptInfo = new InterruptInfo(pin);
+  arg->reqScheduledFunction = scheduledIntRoutine;
 
-	ArgStructure as;
-	as.interruptInfo = ii;
-	as.reqScheduledFunction = scheduledIntRoutine;
-
-	attachInterrupt(pin, [as]() { interruptFunctional(as); }, mode);
+  attachInterrupt(pin, [arg = move(arg)]() {
+    interruptFunctional(*arg);
+  }, mode);
 }
