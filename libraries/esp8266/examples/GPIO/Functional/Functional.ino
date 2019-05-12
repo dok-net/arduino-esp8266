@@ -1,6 +1,4 @@
-#include <Arduino.h>
-#include <Schedule.h>
-#include "FunctionalInterrupts.h"
+#include "FunctionalInterrupt.h"
 
 #if defined(ESP32)
 #define BUTTON1 16
@@ -73,9 +71,6 @@ Button* button2;
 
 void setup() {
   Serial.begin(115200);
-  schedule_function([]() {
-    Serial.println("Scheduled function");
-  });
   Serial.println("FunctionalInterrupt test/example");
 
   button1 = new Button(BUTTON1);

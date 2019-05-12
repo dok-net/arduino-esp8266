@@ -1,5 +1,5 @@
-#ifndef FUNCTIONALINTERRUPTS_H
-#define FUNCTIONALINTERRUPTS_H
+#ifndef FUNCTIONALINTERRUPT_H
+#define FUNCTIONALINTERRUPT_H
 
 #include <Arduino.h>
 #include <functional>
@@ -50,4 +50,4 @@ struct ArgStructure
 
 void attachScheduledInterrupt(uint8_t pin, std::function<void(const InterruptInfo&)> scheduledIntRoutine, int mode);
 
-#endif //INTERRUPTS_H
+#endif //FUNCTIONALINTERRUPT_H
