@@ -1,4 +1,4 @@
-#include "FunctionalInterrupt.h"
+//#include "FunctionalInterrupt.h"
 
 #if defined(ESP32)
 #define BUTTON1 16
@@ -17,25 +17,27 @@ class Button {
       pinMode(PIN, INPUT_PULLUP);
       // Arduino C API:
       //attachInterruptArg(PIN, [](void* self) {
-      //  static_cast<Button*>(self)->isr();
-      //}, this, FALLING); // fails on ESP8266: "ISR not in IRAM"
-      //attachInterruptArg(PIN, reinterpret_cast<void(*)(void*)>(&isr_static), this, FALLING); // works on ESP8266
-      // FunctionalInterrupts API:
-      //attachInterrupt(PIN, [this]() { isr(); }, FALLING); // works on ESP8266
-      attachScheduledInterrupt(PIN, [this](const InterruptInfo & ii) {
-        Serial.print("Pin ");
-        Serial.println(ii.pin);
-        isr();
+      //  static_cast<Button*>(self)->buttonIsr();
+      //}, this, FALLING); // fails on ESP8266: "buttonIsr not in IRAM"
+      //attachInterruptArg(PIN, reinterpret_cast<void(*)(void*)>(&buttonIsr_static), this, FALLING); // works on ESP8266
+      attachInterrupt(PIN, [this]() {
+        buttonIsr();
       }, FALLING); // works on ESP8266
+      // FunctionalInterrupt.h API:
+      //attachScheduledInterrupt(PIN, [this](const InterruptInfo & ii) {
+      //  Serial.print("Pin ");
+      //  Serial.println(ii.pin);
+      //  buttonIsr();
+      //}, FALLING); // works on ESP8266
     };
     ~Button() {
       detachInterrupt(PIN);
     }
 
 #if defined(ESP8266)
-    void ICACHE_RAM_ATTR isr()
+    void ICACHE_RAM_ATTR buttonIsr()
 #elif defined(ESP32)
-    void IRAM_ATTR isr()
+    void IRAM_ATTR buttonIsr()
 #endif
     {
       numberKeyPresses += 1;
@@ -43,12 +45,12 @@ class Button {
     }
 
 #if defined(ESP8266)
-    static void ICACHE_RAM_ATTR isr_static(Button* const self)
+    static void ICACHE_RAM_ATTR buttonIsr_static(Button* const self)
 #elif defined(ESP32)
-    static void IRAM_ATTR isr_static(Button* const self)
+    static void IRAM_ATTR buttonIsr_static(Button* const self)
 #endif
     {
-      self->isr();
+      self->buttonIsr();
     }
 
     uint32_t checkPressed() {
