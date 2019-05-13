@@ -85,8 +85,7 @@ extern "C" {
 #define EXTERNAL 0
 
 //timer dividers
-enum TIM_DIV_ENUM
-{
+enum TIM_DIV_ENUM {
     TIM_DIV1 = 0,   //80MHz (80 ticks/us - 104857.588 us max)
     TIM_DIV16 = 1,  //5MHz (5 ticks/us - 1677721.4 us max)
     TIM_DIV256 = 3 //312.5Khz (1 tick = 3.2us - 26843542.4 us max)
