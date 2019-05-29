@@ -176,7 +176,7 @@ extern void __attachInterrupt(uint8_t pin, voidFuncPtr userFunc, int mode)
     }, mode);
 }
 
-extern void __detachInterrupt(uint8_t pin)
+extern void ICACHE_RAM_ATTR __detachInterrupt(uint8_t pin)
 {
   if (pin < 16)
   {
