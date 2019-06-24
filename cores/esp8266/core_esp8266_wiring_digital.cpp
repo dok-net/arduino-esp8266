@@ -153,10 +153,7 @@ extern void __attachInterruptArg(uint8_t pin, voidFuncPtrArg userFunc, void* arg
     abort();
   }
 
-  attachInterrupt(pin, [userFunc, arg]()
-    {
-      userFunc(arg);
-    }, mode);
+  attachInterrupt(pin, std::bind(userFunc, arg), mode);
 }
 
 extern void __attachInterrupt(uint8_t pin, voidFuncPtr userFunc, int mode)
@@ -170,10 +167,7 @@ extern void __attachInterrupt(uint8_t pin, voidFuncPtr userFunc, int mode)
     abort();
   }
 
-  attachInterrupt(pin, [userFunc]()
-    {
-      userFunc();
-    }, mode);
+  attachInterrupt(pin, std::bind(userFunc), mode);
 }
 
 extern void ICACHE_RAM_ATTR __detachInterrupt(uint8_t pin)
