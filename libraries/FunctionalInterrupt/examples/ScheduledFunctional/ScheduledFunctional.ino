@@ -29,14 +29,12 @@ class Button {
       detachInterrupt(PIN);
     }
 
-    void IRAM_ATTR buttonIsr()
-    {
+    void IRAM_ATTR buttonIsr() {
       numberKeyPresses += 1;
       pressed = true;
     }
 
-    static void IRAM_ATTR buttonIsr_static(Button* const self)
-    {
+    static void IRAM_ATTR buttonIsr_static(Button* const self) {
       self->buttonIsr();
     }
 
