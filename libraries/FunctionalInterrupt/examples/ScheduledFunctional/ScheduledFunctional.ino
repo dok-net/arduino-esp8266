@@ -19,8 +19,11 @@ class Button {
   public:
     Button(uint8_t reqPin) : PIN(reqPin) {
       pinMode(PIN, INPUT_PULLUP);
-      //attachInterruptArg(PIN, reinterpret_cast<void(*)(void*)>(&buttonIsr_static), this, FALLING);
-      attachInterrupt(PIN, std::bind(&Button::buttonIsr, this), FALLING);
+      attachScheduledInterrupt(PIN, [this](const InterruptInfo & ii) {
+        Serial.print("Pin ");
+        Serial.println(ii.pin);
+        buttonIsr();
+      }, FALLING); // works on ESP8266
     };
     ~Button() {
       detachInterrupt(PIN);
