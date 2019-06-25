@@ -1,5 +1,9 @@
 #include <FunctionalInterrupt.h>
 
+#ifndef IRAM_ATTR
+#define IRAM_ATTR ICACHE_RAM_ATTR
+#endif
+
 #if defined(ESP32)
 #define BUTTON1 16
 #define BUTTON2 17
@@ -32,21 +36,13 @@ class Button {
       detachInterrupt(PIN);
     }
 
-#if defined(ESP8266)
-    void ICACHE_RAM_ATTR buttonIsr()
-#elif defined(ESP32)
     void IRAM_ATTR buttonIsr()
-#endif
     {
       numberKeyPresses += 1;
       pressed = true;
     }
 
-#if defined(ESP8266)
-    static void ICACHE_RAM_ATTR buttonIsr_static(Button* const self)
-#elif defined(ESP32)
     static void IRAM_ATTR buttonIsr_static(Button* const self)
-#endif
     {
       self->buttonIsr();
     }
