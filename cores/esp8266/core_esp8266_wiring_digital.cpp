@@ -136,7 +136,7 @@ void ICACHE_RAM_ATTR interrupt_handler(void *arg, void *frame)
       // to make ISR compatible to Arduino AVR model where interrupts are disabled
       // we disable them before we call the client ISR
           esp8266::InterruptLock irqLock; // stop other interrupts
-    	  handler->fn();
+      handler->fn();
     }
   }
   ETS_GPIO_INTR_ENABLE();
