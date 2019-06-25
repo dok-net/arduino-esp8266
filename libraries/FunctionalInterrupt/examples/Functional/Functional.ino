@@ -1,4 +1,4 @@
-//#include "FunctionalInterrupt.h"
+#include <FunctionalInterrupt.h>
 
 #if defined(ESP32)
 #define BUTTON1 16
@@ -15,14 +15,12 @@ class Button {
   public:
     Button(uint8_t reqPin) : PIN(reqPin) {
       pinMode(PIN, INPUT_PULLUP);
-      // Arduino C API:
+      // Arduino API:
       //attachInterruptArg(PIN, [](void* self) {
       //  static_cast<Button*>(self)->buttonIsr();
       //}, this, FALLING); // fails on ESP8266: "buttonIsr not in IRAM"
       //attachInterruptArg(PIN, reinterpret_cast<void(*)(void*)>(&buttonIsr_static), this, FALLING); // works on ESP8266
-      attachInterrupt(PIN, [this]() {
-        buttonIsr();
-      }, FALLING); // works on ESP8266
+      attachInterrupt(PIN, std::bind(&Button::buttonIsr, this), FALLING); // works on ESP8266
       // FunctionalInterrupt.h API:
       //attachScheduledInterrupt(PIN, [this](const InterruptInfo & ii) {
       //  Serial.print("Pin ");
