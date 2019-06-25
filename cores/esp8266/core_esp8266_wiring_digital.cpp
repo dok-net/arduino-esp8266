@@ -26,6 +26,7 @@
 #include "ets_sys.h"
 #include "user_interface.h"
 #include "core_esp8266_waveform.h"
+#include "interrupts.h"
 
 extern "C" {
 
@@ -135,7 +136,7 @@ void ICACHE_RAM_ATTR interrupt_handler(void *arg, void *frame)
          (handler->mode & 1) == !!(levels & (1 << i)))) {
       // to make ISR compatible to Arduino AVR model where interrupts are disabled
       // we disable them before we call the client ISR
-          esp8266::InterruptLock irqLock; // stop other interrupts
+      esp8266::InterruptLock irqLock; // stop other interrupts
       handler->fn();
     }
   }
