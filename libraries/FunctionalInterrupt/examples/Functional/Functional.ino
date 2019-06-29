@@ -1,4 +1,7 @@
-#include <FunctionalInterrupt.h>
+// Hint: On ESP8266, this no longer depends on FunctionalInterrupt, but is rather a feature of
+// the standard API in Arduino.h
+
+//#include <FunctionalInterrupt.h>
 
 #ifndef IRAM_ATTR
 #define IRAM_ATTR ICACHE_RAM_ATTR
