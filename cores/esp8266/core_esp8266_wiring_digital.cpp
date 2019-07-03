@@ -171,6 +171,13 @@ extern void __attachInterrupt(uint8_t pin, voidFuncPtr userFunc, int mode)
   attachInterrupt(pin, std::bind(userFunc), mode);
 }
 
+void set_interrupt_handlers(uint8_t pin, std::function<void()> userFunc, uint8_t mode)
+{
+	interrupt_handler_t* handler = &interrupt_handlers[pin];
+	handler->fn = userFunc;
+	handler->mode = mode;
+}
+
 extern void ICACHE_RAM_ATTR __detachInterrupt(uint8_t pin)
 {
   if (pin < 16)
@@ -179,9 +186,7 @@ extern void ICACHE_RAM_ATTR __detachInterrupt(uint8_t pin)
     GPC(pin) &= ~(0xF << GPCI);//INT mode disabled
     GPIEC = (1 << pin); //Clear Interrupt for this pin
     interrupt_reg &= ~(1 << pin);
-    interrupt_handler_t *handler = &interrupt_handlers[pin];
-    handler->mode = 0;
-    handler->fn = nullptr;
+	set_interrupt_handlers(pin, nullptr, 0);
     if (interrupt_reg)
     {
       ETS_GPIO_INTR_ENABLE();
@@ -221,9 +226,7 @@ extern void attachInterrupt(uint8_t pin, std::function<void()> userFunc, int mod
   if (pin < 16)
   {
     ETS_GPIO_INTR_DISABLE();
-    interrupt_handler_t* handler = &interrupt_handlers[pin];
-    handler->mode = mode;
-    handler->fn = userFunc;
+	set_interrupt_handlers(pin, userFunc, mode);
     interrupt_reg |= (1 << pin);
     GPC(pin) &= ~(0xF << GPCI);//INT mode disabled
     GPIEC = (1 << pin); //Clear Interrupt for this pin
