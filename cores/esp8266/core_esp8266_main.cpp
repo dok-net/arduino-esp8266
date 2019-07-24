@@ -23,7 +23,6 @@
 //This may be used to change user task stack size:
 //#define CONT_STACKSIZE 4096
 #include <Arduino.h>
-#include "Schedule.h"
 extern "C" {
 #include "ets_sys.h"
 #include "os_type.h"
@@ -40,7 +39,6 @@ extern "C" {
 #define OPTIMISTIC_YIELD_TIME_US 16000
 
 extern "C" void call_user_start();
-extern void loop();
 extern void setup();
 extern void (*__init_array_start)(void);
 extern void (*__init_array_end)(void);
@@ -90,12 +88,11 @@ void preloop_update_frequency() {
 #endif
 }
 
-
-static inline void esp_yield_within_cont() __attribute__((always_inline));
-static void esp_yield_within_cont() {
+extern "C" void __esp_yield_within_cont() {
         cont_yield(g_pcont);
-        run_scheduled_recurrent_functions();
 }
+
+extern "C" void esp_yield_within_cont() __attribute__ ((weak, alias("__esp_yield_within_cont")));
 
 extern "C" void esp_yield() {
     if (cont_can_yield(g_pcont)) {
@@ -157,13 +154,10 @@ extern "C" bool IRAM_ATTR ets_post(uint8 prio, ETSSignal sig, ETSParam par) {
   return rc;
 }
 
-extern "C" void __loop_end (void)
-{
-    run_scheduled_functions();
-    run_scheduled_recurrent_functions();
+extern "C" void esp_loop(void) __attribute__((weak));
+extern "C" void esp_loop(void) {
+    loop();
 }
-
-extern "C" void loop_end (void) __attribute__ ((weak, alias("__loop_end")));
 
 static void loop_wrapper() {
     static bool setup_done = false;
@@ -172,8 +166,7 @@ static void loop_wrapper() {
         setup();
         setup_done = true;
     }
-    loop();
-    loop_end();
+    esp_loop();
     esp_schedule();
 }
 
