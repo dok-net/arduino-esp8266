@@ -67,7 +67,8 @@ CORE_CPP_FILES := $(addprefix $(CORE_PATH)/,\
 	spiffs/spiffs_nucleus.cpp \
 	libb64/cencode.cpp \
 	libb64/cdecode.cpp \
-	Schedule.cpp \
+	../../libraries/Ticker/src/Ticker.cpp \
+	../../libraries/FastScheduler/src/FastScheduler.cpp \
 	HardwareSerial.cpp \
 	crc32.cpp \
 	) \
