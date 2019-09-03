@@ -84,14 +84,12 @@ bool run_function(scheduled_fn_t& func)
         yield();
 #endif
     }
+    if (func.policy != SCHEDULE_FUNCTION_WITHOUT_YIELDELAYCALLS && activePolicy != SCHEDULE_FUNCTION_FROM_LOOP) return true;
     bool wakeupToken = func.wakeupToken && func.wakeupToken->load();
     bool wakeup = func.wakeupTokenCmp != wakeupToken;
     if (wakeup) func.wakeupTokenCmp = wakeupToken;
-    return
-        (!wakeup &&
-        ((func.policy != SCHEDULE_FUNCTION_WITHOUT_YIELDELAYCALLS && activePolicy != SCHEDULE_FUNCTION_FROM_LOOP)
-            || !func.callNow))
-        || func.mFunc();
+    bool callNow = func.callNow;
+    return !(wakeup || callNow) || func.mFunc();
 }
 
 void run_scheduled_functions(schedule_e policy)
@@ -111,7 +109,7 @@ void run_scheduled_functions(schedule_e policy)
             return;
         }
         fence.store(true);
-}
+    }
 #else
     if (fence.exchange(true)) return;
 #endif
