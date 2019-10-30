@@ -131,9 +131,8 @@ void ICACHE_RAM_ATTR interrupt_handler(void *arg, void *frame)
     while(!(changedbits & (1 << i))) i++;
     changedbits &= ~(1 << i);
     interrupt_handler_t *handler = &interrupt_handlers[i];
-    if (handler->fn && 
-        (handler->mode == CHANGE || 
-         (handler->mode & 1) == !!(levels & (1 << i)))) {
+    if (handler->mode == CHANGE || 
+         (handler->mode & 1) == !!(levels & (1 << i))) {
       // to make ISR compatible to Arduino AVR model where interrupts are disabled
       // we disable them before we call the client ISR
       esp8266::InterruptLock irqLock; // stop other interrupts
@@ -173,6 +172,7 @@ extern void __attachInterrupt(uint8_t pin, voidFuncPtr userFunc, int mode)
 
 void set_interrupt_handlers(uint8_t pin, std::function<void()>&& userFunc, uint8_t mode)
 {
+	if (!userFunc) return;
 	interrupt_handler_t* handler = &interrupt_handlers[pin];
 	handler->fn = std::move(userFunc);
 	handler->mode = mode;
