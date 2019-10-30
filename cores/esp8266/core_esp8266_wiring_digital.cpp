@@ -115,38 +115,56 @@ namespace
         voidFuncPtr fn;
         std::function<void()> functional;
     };
-}
 
-static interrupt_handler_t interrupt_handlers[16] = { {0, nullptr, nullptr}, };
-static uint32_t interrupt_reg = 0;
+    static interrupt_handler_t interrupt_handlers[16] = { {0, nullptr, nullptr}, };
+    static uint32_t interrupt_reg = 0;
 
-void ICACHE_RAM_ATTR interrupt_handler(void *arg, void *frame)
-{
-  (void) arg;
-  (void) frame;
-  uint32_t status = GPIE;
-  GPIEC = status;//clear them interrupts
-  uint32_t levels = GPI;
-  if(status == 0 || interrupt_reg == 0) return;
-  ETS_GPIO_INTR_DISABLE();
-  int i = 0;
-  uint32_t changedbits = status & interrupt_reg;
-  while(changedbits){
-    while(!(changedbits & (1 << i))) i++;
-    changedbits &= ~(1 << i);
-    interrupt_handler_t *handler = &interrupt_handlers[i];
-    if (handler->mode == CHANGE || 
-         (handler->mode & 1) == !!(levels & (1 << i))) {
-      // to make ISR compatible to Arduino AVR model where interrupts are disabled
-      // we disable them before we call the client ISR
-      esp8266::InterruptLock irqLock; // stop other interrupts
-      if (handler->fn)
-         handler->fn();
-      else
-         handler->functional();
+    void ICACHE_RAM_ATTR set_interrupt_handlers(uint8_t pin, voidFuncPtr userFunc, uint8_t mode)
+    {
+        interrupt_handler_t* handler = &interrupt_handlers[pin];
+        handler->fn = userFunc;
+        handler->functional = nullptr;
+        if (userFunc)
+            handler->mode = mode;
     }
-  }
-  ETS_GPIO_INTR_ENABLE();
+
+    void ICACHE_RAM_ATTR interrupt_handler(void *arg, void *frame)
+    {
+        (void) arg;
+        (void) frame;
+        uint32_t status = GPIE;
+        GPIEC = status;//clear them interrupts
+        uint32_t levels = GPI;
+        if (status == 0 || interrupt_reg == 0) return;
+        ETS_GPIO_INTR_DISABLE();
+        int i = 0;
+        uint32_t changedbits = status & interrupt_reg;
+        while (changedbits) {
+            while (!(changedbits & (1 << i))) i++;
+            changedbits &= ~(1 << i);
+            interrupt_handler_t* handler = &interrupt_handlers[i];
+            if (handler->mode == CHANGE ||
+                (handler->mode & 1) == !!(levels & (1 << i))) {
+                // to make ISR compatible to Arduino AVR model where interrupts are disabled
+                // we disable them before we call the client ISR
+                esp8266::InterruptLock irqLock; // stop other interrupts
+                if (handler->fn)
+                    handler->fn();
+                else
+                    handler->functional();
+            }
+        }
+        ETS_GPIO_INTR_ENABLE();
+    }
+
+    void set_interrupt_reg(uint8_t pin, int mode)
+    {
+        interrupt_reg |= (1 << pin);
+        GPC(pin) &= ~(0xF << GPCI);//INT mode disabled
+        GPIEC = (1 << pin); //Clear Interrupt for this pin
+        GPC(pin) |= ((mode & 0xF) << GPCI);//INT mode "mode"
+        ETS_GPIO_INTR_ATTACH(interrupt_handler, &interrupt_reg);
+    }
 }
 
 extern void __attachInterruptArg(uint8_t pin, voidFuncPtrArg userFunc, void* arg, int mode)
@@ -161,27 +179,6 @@ extern void __attachInterruptArg(uint8_t pin, voidFuncPtrArg userFunc, void* arg
   }
 
   attachInterrupt(pin, std::bind(userFunc, arg), mode);
-}
-
-namespace
-{
-    void set_interrupt_reg(uint8_t pin, int mode)
-    {
-        interrupt_reg |= (1 << pin);
-        GPC(pin) &= ~(0xF << GPCI);//INT mode disabled
-        GPIEC = (1 << pin); //Clear Interrupt for this pin
-        GPC(pin) |= ((mode & 0xF) << GPCI);//INT mode "mode"
-        ETS_GPIO_INTR_ATTACH(interrupt_handler, &interrupt_reg);
-    }
-    
-    void set_interrupt_handlers(uint8_t pin, voidFuncPtr userFunc, uint8_t mode)
-    {
-        interrupt_handler_t* handler = &interrupt_handlers[pin];
-        handler->fn = userFunc;
-        handler->functional = nullptr;
-        if (userFunc)
-            handler->mode = mode;
-    }
 }
 
 extern void __attachInterrupt(uint8_t pin, voidFuncPtr userFunc, int mode)
