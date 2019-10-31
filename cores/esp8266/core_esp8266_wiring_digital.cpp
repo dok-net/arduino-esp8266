@@ -176,7 +176,7 @@ void ICACHE_RAM_ATTR interrupt_handler(void *arg, void *frame)
 
 extern void cleanupFunctional(void* arg);
 
-static void set_interrupt_handlers(uint8_t pin, voidFuncPtr userFunc, void* arg, uint8_t mode, bool functional)
+static void ICACHE_RAM_ATTR set_interrupt_handlers(uint8_t pin, voidFuncPtr userFunc, void* arg, uint8_t mode, bool functional)
 {
   interrupt_handler_t* handler = &interrupt_handlers[pin];
   handler->mode = mode;
