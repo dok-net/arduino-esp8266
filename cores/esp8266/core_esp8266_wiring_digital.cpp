@@ -121,11 +121,11 @@ namespace
 
     void ICACHE_RAM_ATTR set_interrupt_handlers(uint8_t pin, voidFuncPtr userFunc, uint8_t mode)
     {
-        interrupt_handler_t* handler = &interrupt_handlers[pin];
-        handler->fn = userFunc;
-        handler->functional = nullptr;
-        if (userFunc)
-            handler->mode = mode;
+        interrupt_handler_t& handler = interrupt_handlers[pin];
+        handler.fn = userFunc;
+        handler.functional = nullptr;
+        if (handler.fn)
+            handler.mode = mode;
     }
 
     void ICACHE_RAM_ATTR interrupt_handler(void *arg, void *frame)
@@ -251,11 +251,11 @@ namespace
 {
     void set_interrupt_handlers(uint8_t pin, std::function<void()>&& userFunc, uint8_t mode)
     {
-        interrupt_handler_t* handler = &interrupt_handlers[pin];
-        handler->fn = nullptr;
-        handler->functional = std::move(userFunc);
-        if (userFunc)
-            handler->mode = mode;
+        interrupt_handler_t& handler = interrupt_handlers[pin];
+        handler.fn = nullptr;
+        handler.functional = std::move(userFunc);
+        if (handler.functional)
+            handler.mode = mode;
     }
 }
 
