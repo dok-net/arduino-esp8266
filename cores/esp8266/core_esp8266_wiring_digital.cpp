@@ -111,19 +111,39 @@ typedef void (*voidFuncPtrArg)(void*);
 namespace
 {
     struct interrupt_handler_t {
+        interrupt_handler_t()
+        {
+            mode = 0;
+            isFunctional = false;
+            fn = nullptr;
+        }
+        ~interrupt_handler_t()
+        {
+            using std::function;
+            if (isFunctional)
+                functional.~function<void()>();
+        }
         uint8_t mode;
-        voidFuncPtr fn;
-        std::function<void()> functional;
+        bool isFunctional;
+        union {
+            voidFuncPtr fn;
+            std::function<void()> functional;
+        };
     };
 
-    static interrupt_handler_t interrupt_handlers[16] = { {0, nullptr, nullptr}, };
+    static interrupt_handler_t interrupt_handlers[16];
     static uint32_t interrupt_reg = 0;
 
     void ICACHE_RAM_ATTR set_interrupt_handlers(uint8_t pin, voidFuncPtr userFunc, uint8_t mode)
     {
+        using std::function;
         interrupt_handler_t& handler = interrupt_handlers[pin];
+        if (handler.isFunctional)
+        {
+            handler.functional.~function<void()>();
+            handler.isFunctional = false;
+        }
         handler.fn = userFunc;
-        handler.functional = nullptr;
         if (handler.fn)
             handler.mode = mode;
     }
@@ -150,10 +170,10 @@ namespace
                 // to make ISR compatible to Arduino AVR model where interrupts are disabled
                 // we disable them before we call the client ISR
                 esp8266::InterruptLock irqLock; // stop other interrupts
-                if (handler.fn)
-                    handler.fn();
-                else
+                if (handler.isFunctional)
                     handler.functional();
+                else
+                    handler.fn();
             }
             ++i;
         }
@@ -252,7 +272,11 @@ namespace
     void set_interrupt_handlers(uint8_t pin, std::function<void()>&& userFunc, uint8_t mode)
     {
         interrupt_handler_t& handler = interrupt_handlers[pin];
-        handler.fn = nullptr;
+        if (!handler.isFunctional)
+        {
+            new (&handler.functional) std::function<void()>();
+            handler.isFunctional = true;
+        }
         handler.functional = std::move(userFunc);
         if (handler.functional)
             handler.mode = mode;
