@@ -188,33 +188,29 @@ namespace
         GPC(pin) |= ((mode & 0xF) << GPCI);//INT mode "mode"
         ETS_GPIO_INTR_ATTACH(interrupt_handler, &interrupt_reg);
     }
+
+    inline void isr_iram_assertion(uint32_t userFunc)
+    {
+        // #5780
+        // https://github.com/esp8266/esp8266-wiki/wiki/Memory-Map
+        if (userFunc >= 0x40200000)
+        {
+            // ISR not in IRAM
+            ::printf((PGM_P)F("ISR not in IRAM!\r\n"));
+            abort();
+        }
+    }
 }
 
 extern void __attachInterruptArg(uint8_t pin, voidFuncPtrArg userFunc, void* arg, int mode)
 {
-  // #5780
-  // https://github.com/esp8266/esp8266-wiki/wiki/Memory-Map
-  if ((uint32_t)userFunc >= 0x40200000)
-  {
-    // ISR not in IRAM
-    ::printf((PGM_P)F("ISR not in IRAM!\r\n"));
-    abort();
-  }
-
+  isr_iram_assertion((uint32_t)userFunc);
   attachInterrupt(pin, std::bind(userFunc, arg), mode);
 }
 
 extern void __attachInterrupt(uint8_t pin, voidFuncPtr userFunc, int mode)
 {
-  // #5780
-  // https://github.com/esp8266/esp8266-wiki/wiki/Memory-Map
-  if ((uint32_t)userFunc >= 0x40200000)
-  {
-    // ISR not in IRAM
-    ::printf((PGM_P)F("ISR not in IRAM!\r\n"));
-    abort();
-  }
-
+  isr_iram_assertion((uint32_t)userFunc);
   if (pin < 16)
   {
       ETS_GPIO_INTR_DISABLE();
@@ -277,9 +273,9 @@ namespace
             new (&handler.functional) std::function<void()>();
             handler.isFunctional = true;
         }
-        handler.functional = std::move(userFunc);
-        if (handler.functional)
+        if (userFunc)
             handler.mode = mode;
+        handler.functional = std::move(userFunc);
     }
 }
 
