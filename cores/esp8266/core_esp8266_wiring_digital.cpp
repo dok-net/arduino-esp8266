@@ -125,6 +125,7 @@ extern "C" {
                 mode = 0;
                 isFunctional = false;
                 fn = nullptr;
+                arg = nullptr;
             }
             ~interrupt_handler_t()
             {
