@@ -123,44 +123,16 @@ extern "C" {
             interrupt_handler_t()
             {
                 mode = 0;
-                isFunctional = false;
-                fn = nullptr;
-                arg = nullptr;
             }
             ~interrupt_handler_t()
             {
-                using std::function;
-                if (isFunctional)
-                    functional.~function<void()>();
             }
             uint8_t mode;
-            bool isFunctional;
-            union {
-                struct {
-                    voidFuncPtrArg fn;
-                    void* arg;
-                };
-                std::function<void()> functional;
-            };
+            Delegate<void, void*> userFunc;
         };
 
         static interrupt_handler_t interrupt_handlers[16];
         static uint32_t interrupt_reg = 0;
-
-        void ICACHE_RAM_ATTR set_interrupt_handlers(uint8_t pin, voidFuncPtrArg userFunc, void* arg, uint8_t mode)
-        {
-            using std::function;
-            interrupt_handler_t& handler = interrupt_handlers[pin];
-            if (handler.isFunctional)
-            {
-                handler.functional.~function<void()>();
-                handler.isFunctional = false;
-            }
-            handler.fn = userFunc;
-            handler.arg = arg;
-            if (handler.fn)
-                handler.mode = mode;
-        }
 
         void ICACHE_RAM_ATTR interrupt_handler(void *arg, void *frame)
         {
@@ -184,10 +156,7 @@ extern "C" {
                     // to make ISR compatible to Arduino AVR model where interrupts are disabled
                     // we disable them before we call the client ISR
                     esp8266::InterruptLock irqLock; // stop other interrupts
-                    if (handler.isFunctional)
-                        handler.functional();
-                    else
-                        handler.fn(handler.arg);
+                    handler.userFunc();
                 }
                 ++i;
             }
@@ -219,13 +188,7 @@ extern "C" {
     extern void __attachInterruptArg(uint8_t pin, voidFuncPtrArg const userFunc, void* const arg, int mode)
     {
         isr_iram_assertion((uint32_t)userFunc);
-        if (pin < 16)
-        {
-            ETS_GPIO_INTR_DISABLE();
-            set_interrupt_handlers(pin, userFunc, arg, mode);
-            set_interrupt_reg(pin, mode);
-            ETS_GPIO_INTR_ENABLE();
-        }
+        attachInterrupt(pin, Delegate<void, void*>(userFunc, arg), mode);
     }
 
     extern void __attachInterrupt(uint8_t pin, voidFuncPtr userFunc, int mode)
@@ -241,7 +204,9 @@ extern "C" {
             GPC(pin) &= ~(0xF << GPCI);//INT mode disabled
             GPIEC = (1 << pin); //Clear Interrupt for this pin
             interrupt_reg &= ~(1 << pin);
-            set_interrupt_handlers(pin, nullptr, nullptr, 0);
+            interrupt_handler_t& handler = interrupt_handlers[pin];
+            handler.userFunc = nullptr;
+            handler.mode = 0;
             if (interrupt_reg)
             {
                 ETS_GPIO_INTR_ENABLE();
@@ -278,21 +243,16 @@ extern "C" {
 
 namespace
 {
-    void set_interrupt_handlers(uint8_t pin, std::function<void()>&& userFunc, uint8_t mode)
+    void ICACHE_RAM_ATTR set_interrupt_handlers(uint8_t pin, Delegate<void, void*>&& userFunc, uint8_t mode)
     {
         interrupt_handler_t& handler = interrupt_handlers[pin];
-        if (!handler.isFunctional)
-        {
-            new (&handler.functional) std::function<void()>();
-            handler.isFunctional = true;
-        }
-        if (userFunc)
+        handler.userFunc = std::move(userFunc);
+        if (handler.userFunc)
             handler.mode = mode;
-        handler.functional = std::move(userFunc);
     }
 }
 
-extern void attachInterrupt(uint8_t pin, std::function<void()> userFunc, int mode)
+extern void attachInterrupt(uint8_t pin, Delegate<void, void*> userFunc, int mode)
 {
     if (pin < 16)
     {
