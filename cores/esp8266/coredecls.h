@@ -27,22 +27,24 @@ uint32_t crc32 (const void* data, size_t length, uint32_t crc = 0xffffffff);
 #ifdef __cplusplus
 }
 
-#include <functional>
+#include <Delegate.h>
 
-using TrivialCB = std::function<void()>;
+using TrivialCB = Delegate<>;
 
 void settimeofday_cb (TrivialCB&& cb);
 void settimeofday_cb (const TrivialCB& cb);
 
-inline void esp_yield(const std::function<bool()>& blocked) {
+using IsBlockedCB = Delegate<bool, void*>;
+
+inline void esp_yield(const IsBlockedCB& blocked) {
     do {
         esp_yield();
     } while (blocked());
 }
 
-void esp_delay(const uint32_t timeout_ms, const std::function<bool()>& blocked, const uint32_t intvl_ms);
+void esp_delay(const uint32_t timeout_ms, const IsBlockedCB& blocked, const uint32_t intvl_ms);
 
-inline void esp_delay(const uint32_t timeout_ms, const std::function<bool()>& blocked) {
+inline void esp_delay(const uint32_t timeout_ms, const IsBlockedCB& blocked) {
     esp_delay(timeout_ms, blocked, timeout_ms);
 }
 
