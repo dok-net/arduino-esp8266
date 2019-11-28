@@ -188,7 +188,7 @@ extern "C" {
     extern void __attachInterruptArg(uint8_t pin, voidFuncPtrArg const userFunc, void* const arg, int mode)
     {
         isr_iram_assertion((uint32_t)userFunc);
-        attachInterrupt(pin, Delegate<void, void*>(userFunc, arg), mode);
+		attachInterrupt(pin, { userFunc, arg }, mode);
     }
 
     extern void __attachInterrupt(uint8_t pin, voidFuncPtr userFunc, int mode)
