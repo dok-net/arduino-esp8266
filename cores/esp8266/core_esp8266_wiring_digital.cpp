@@ -128,7 +128,7 @@ extern "C" {
             {
             }
             uint8_t mode;
-            Delegate<void(void*), void*> userFunc;
+            Delegate<void(), void*> userFunc;
         };
 
         static interrupt_handler_t interrupt_handlers[16];
@@ -243,7 +243,7 @@ extern "C" {
 
 namespace
 {
-    void ICACHE_RAM_ATTR set_interrupt_handlers(uint8_t pin, Delegate<void(void*), void*>&& userFunc, uint8_t mode)
+    void ICACHE_RAM_ATTR set_interrupt_handlers(uint8_t pin, Delegate<void(), void*>&& userFunc, uint8_t mode)
     {
         interrupt_handler_t& handler = interrupt_handlers[pin];
         handler.userFunc = std::move(userFunc);
@@ -252,7 +252,7 @@ namespace
     }
 }
 
-extern void attachInterrupt(uint8_t pin, Delegate<void(void*), void*> userFunc, int mode)
+extern void attachInterrupt(uint8_t pin, Delegate<void(), void*> userFunc, int mode)
 {
     if (pin < 16)
     {
