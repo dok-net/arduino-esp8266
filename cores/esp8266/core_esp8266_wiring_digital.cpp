@@ -172,11 +172,11 @@ extern "C" {
             ETS_GPIO_INTR_ATTACH(interrupt_handler, &interrupt_reg);
         }
 
-        inline void isr_iram_assertion(uint32_t userFunc)
+        inline void isr_iram_assertion(voidFuncPtrArg userFunc)
         {
             // #5780
             // https://github.com/esp8266/esp8266-wiki/wiki/Memory-Map
-            if (userFunc >= 0x40200000)
+            if ((uint32_t)userFunc >= 0x40200000)
             {
                 // ISR not in IRAM
                 ::printf((PGM_P)F("ISR not in IRAM!\r\n"));
@@ -187,8 +187,7 @@ extern "C" {
 
     extern void __attachInterruptArg(uint8_t pin, voidFuncPtrArg const userFunc, void* const arg, int mode)
     {
-        isr_iram_assertion((uint32_t)userFunc);
-		attachInterrupt(pin, { userFunc, arg }, mode);
+        attachInterrupt(pin, { userFunc, arg }, mode);
     }
 
     extern void __attachInterrupt(uint8_t pin, voidFuncPtr userFunc, int mode)
@@ -254,6 +253,7 @@ namespace
 
 extern void attachInterrupt(uint8_t pin, Delegate<void(), void*> userFunc, int mode)
 {
+    isr_iram_assertion(userFunc);
     if (pin < 16)
     {
         ETS_GPIO_INTR_DISABLE();
