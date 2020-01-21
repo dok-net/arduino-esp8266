@@ -4,20 +4,32 @@
 
 namespace {
 
-    void ICACHE_RAM_ATTR interruptScheduleFunctional(uint8_t pin, std::function<void(InterruptInfo)> scheduledIntRoutine)
+    struct InterruptScheduleFunctionalArg
     {
-        InterruptInfo interruptInfo(pin);
-        interruptInfo.value = digitalRead(pin);
-        interruptInfo.micro = micros();
-        schedule_function(std::bind(std::move(scheduledIntRoutine), std::move(interruptInfo)));
+        uint8_t pin;
+        Delegate<void(const InterruptInfo&), void*> scheduledIntRoutine;
+    };
+    struct ScheduleLambdaArg
+    {
+        Delegate<void(const InterruptInfo&), void*> scheduledIntRoutine;
+        InterruptInfo interruptInfo;
+    };
+
+    void ICACHE_RAM_ATTR interruptScheduleFunctional(const InterruptScheduleFunctionalArg& arg)
+    {
+        ScheduleLambdaArg lambdaArg{ arg.scheduledIntRoutine, { arg.pin } };
+        lambdaArg.interruptInfo.value = digitalRead(arg.pin);
+        lambdaArg.interruptInfo.micro = micros();
+        schedule_function([lambdaArg]() { lambdaArg.scheduledIntRoutine(lambdaArg.interruptInfo); });
     }
 
 }
 
-void attachScheduledInterrupt(uint8_t pin, std::function<void(InterruptInfo)> scheduledIntRoutine, int mode)
+void attachScheduledInterrupt(uint8_t pin, const Delegate<void(const InterruptInfo&), void*>& scheduledIntRoutine, int mode)
 {
     if (scheduledIntRoutine)
     {
-        attachInterrupt(pin, std::bind(interruptScheduleFunctional, pin, std::move(scheduledIntRoutine)), mode);
+        InterruptScheduleFunctionalArg arg{ pin, scheduledIntRoutine };
+        attachInterrupt(pin, [arg]() { interruptScheduleFunctional(arg); }, mode);
     }
 }

@@ -19,34 +19,33 @@
 #endif
 
 class Button {
-  public:
+public:
     Button(uint8_t reqPin) : PIN(reqPin) {
-      pinMode(PIN, INPUT_PULLUP);
-      //attachInterruptArg(PIN, reinterpret_cast<void(*)(void*)>(&buttonIsr_static), this, FALLING);
-      attachInterrupt(PIN, std::bind(&Button::buttonIsr, this), FALLING);
+        pinMode(PIN, INPUT_PULLUP);
+        attachInterrupt(PIN, { buttonIsr_static, this }, FALLING);
     };
     ~Button() {
-      detachInterrupt(PIN);
+        detachInterrupt(PIN);
     }
 
     void IRAM_ATTR buttonIsr() {
-      numberKeyPresses += 1;
-      pressed = true;
+        numberKeyPresses += 1;
+        pressed = true;
     }
 
-    static void IRAM_ATTR buttonIsr_static(Button* const self) {
-      self->buttonIsr();
+    static void IRAM_ATTR buttonIsr_static(void* const self) {
+        static_cast<Button* const>(self)->buttonIsr();
     }
 
     uint32_t checkPressed() {
-      if (pressed) {
-        Serial.printf("Button on pin %u has been pressed %u times\n", PIN, numberKeyPresses);
-        pressed = false;
-      }
-      return numberKeyPresses;
+        if (pressed) {
+            Serial.printf("Button on pin %u has been pressed %u times\n", PIN, numberKeyPresses);
+            pressed = false;
+        }
+        return numberKeyPresses;
     }
 
-  private:
+private:
     const uint8_t PIN;
     volatile uint32_t numberKeyPresses = 0;
     volatile bool pressed = false;
@@ -57,19 +56,19 @@ Button* button2;
 
 
 void setup() {
-  Serial.begin(115200);
-  Serial.println("FunctionalInterrupt test/example");
+    Serial.begin(115200);
+    Serial.println("FunctionalInterrupt test/example");
 
-  button1 = new Button(BUTTON1);
-  button2 = new Button(BUTTON2);
+    button1 = new Button(BUTTON1);
+    button2 = new Button(BUTTON2);
 
-  Serial.println("setup() complete");
+    Serial.println("setup() complete");
 }
 
 void loop() {
-  button1->checkPressed();
-  if (nullptr != button2 && 10 < button2->checkPressed()) {
-    delete button2;
-    button2 = nullptr;
-  }
+    button1->checkPressed();
+    if (nullptr != button2 && 10 < button2->checkPressed()) {
+        delete button2;
+        button2 = nullptr;
+    }
 }

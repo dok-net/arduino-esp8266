@@ -187,6 +187,7 @@ extern "C" {
 
     extern void __attachInterruptArg(uint8_t pin, voidFuncPtrArg const userFunc, void* const arg, int mode)
     {
+        isr_iram_assertion(userFunc);
         attachInterrupt(pin, { userFunc, arg }, mode);
     }
 
@@ -253,7 +254,7 @@ namespace
 
 extern void attachInterrupt(uint8_t pin, Delegate<void(), void*> userFunc, int mode)
 {
-    isr_iram_assertion(userFunc);
+    // isr_iram_assertion cannot inspect std::function objects; Delegate hides if its a std::function or C-style ptr
     if (pin < 16)
     {
         ETS_GPIO_INTR_DISABLE();

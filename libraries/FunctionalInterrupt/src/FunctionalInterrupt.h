@@ -1,7 +1,7 @@
 #ifndef FUNCTIONALINTERRUPT_H
 #define FUNCTIONALINTERRUPT_H
 
-#include <functional>
+#include <Delegate.h>
 
 // Structures for communication
 
@@ -13,6 +13,6 @@ struct InterruptInfo
     uint32_t micro = 0;
 };
 
-void attachScheduledInterrupt(uint8_t pin, std::function<void(InterruptInfo)> scheduledIntRoutine, int mode);
+void attachScheduledInterrupt(uint8_t pin, const Delegate<void(const InterruptInfo&), void*>& scheduledIntRoutine, int mode);
 
 #endif //FUNCTIONALINTERRUPT_H
