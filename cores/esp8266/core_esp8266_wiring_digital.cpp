@@ -117,7 +117,7 @@ extern "C" {
     typedef void (*voidFuncPtr)(void);
     typedef void (*voidFuncPtrArg)(void*);
 
-    namespace
+    namespace detail
     {
         struct interrupt_handler_t {
             interrupt_handler_t()
@@ -241,7 +241,7 @@ extern "C" {
 
 };
 
-namespace
+namespace detail
 {
     void ICACHE_RAM_ATTR set_interrupt_handlers(uint8_t pin, Delegate<void(), void*>&& userFunc, uint8_t mode)
     {
