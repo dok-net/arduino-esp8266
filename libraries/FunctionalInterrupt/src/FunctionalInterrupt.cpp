@@ -2,7 +2,8 @@
 #include <Schedule.h>
 #include <Arduino.h>
 
-namespace {
+namespace detail
+{
 
     struct InterruptScheduleFunctionalArg
     {
@@ -29,7 +30,7 @@ void attachScheduledInterrupt(uint8_t pin, const Delegate<void(const InterruptIn
 {
     if (scheduledIntRoutine)
     {
-        InterruptScheduleFunctionalArg arg{ pin, scheduledIntRoutine };
-        attachInterrupt(pin, [arg]() { interruptScheduleFunctional(arg); }, mode);
+        detail::InterruptScheduleFunctionalArg arg{ pin, scheduledIntRoutine };
+        attachInterrupt(pin, [arg]() { detail::interruptScheduleFunctional(arg); }, mode);
     }
 }
