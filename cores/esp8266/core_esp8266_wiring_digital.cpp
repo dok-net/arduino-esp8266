@@ -133,10 +133,7 @@ extern "C" {
 
         static interrupt_handler_t interrupt_handlers[16];
         static uint32_t interrupt_reg = 0;
-    }
 
-    namespace detail
-    {
         void ICACHE_RAM_ATTR interrupt_handler(void *arg, void *frame)
         {
             (void) arg;
@@ -166,17 +163,13 @@ extern "C" {
             ETS_GPIO_INTR_ENABLE();
         }
 
-    }
-
-    namespace
-    {
         void set_interrupt_reg(uint8_t pin, int mode)
         {
             interrupt_reg |= (1 << pin);
             GPC(pin) &= ~(0xF << GPCI);//INT mode disabled
             GPIEC = (1 << pin); //Clear Interrupt for this pin
             GPC(pin) |= ((mode & 0xF) << GPCI);//INT mode "mode"
-            ETS_GPIO_INTR_ATTACH(detail::interrupt_handler, &interrupt_reg);
+            ETS_GPIO_INTR_ATTACH(interrupt_handler, &interrupt_reg);
         }
 
         inline void isr_iram_assertion(voidFuncPtrArg userFunc)
