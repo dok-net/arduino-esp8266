@@ -76,7 +76,7 @@ private:
 	esp8266::polledTimeout::periodicFastMs timeToYield(5); // Yield every 5ms of runtime
         for (uint32_t i = 0; i < count; i++) {
             if (timeToYield) {
-                yield(); // WDT feed
+                esp_resume(); // WDT feed
             }
             if (!card->writeData(cache->data)) {
                 DEBUGV("SDFS: Clear FAT/DIR writeData failed");
@@ -383,7 +383,7 @@ public:
             if (!card->erase(firstBlock, lastBlock)) {
                 return false; // Erase fail
             }
-            yield(); // yield to the OS to avoid WDT
+            esp_resume(); // yield to the OS to avoid WDT
             firstBlock += ERASE_SIZE;
         } while (firstBlock < cardSizeBlocks);
 

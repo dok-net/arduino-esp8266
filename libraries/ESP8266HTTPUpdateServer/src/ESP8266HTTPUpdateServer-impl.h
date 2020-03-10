@@ -8,6 +8,8 @@
 #include "StreamString.h"
 #include "ESP8266HTTPUpdateServer.h"
 
+extern "C" void esp_resume();
+
 namespace esp8266httpupdateserver {
 using namespace esp8266webserver;
 
@@ -119,7 +121,7 @@ void ESP8266HTTPUpdateServerTemplate<ServerType>::setup(ESP8266WebServerTemplate
         Update.end();
         if (_serial_output) Serial.println("Update was aborted");
       }
-      yield();
+      esp_resume();
     });
 }
 

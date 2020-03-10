@@ -28,6 +28,8 @@
 #include <limits.h>
 #include <string.h>
 
+extern "C" void esp_resume();
+
 /**
  * @brief Print WiFi status
  * @details
@@ -91,7 +93,7 @@ static wl_status_t waitWiFiConnect(uint32_t connectTimeoutMs)
     // Wait for WiFi status change or timeout
     do {
         // Refresh watchdog
-        yield();
+        esp_resume();
 
         // Get WiFi status
         status = WiFi.status();
@@ -249,7 +251,7 @@ int8_t ESP8266WiFiMulti::startScan()
     // Wait for WiFi scan change or timeout
     do {
         // Refresh watchdog
-        yield();
+        esp_resume();
 
         // Check scan timeout which may occur when scan does not report completion
         if (scanTimeout) {
@@ -509,7 +511,7 @@ void ESP8266WiFiMulti::printWiFiScan()
                          rssi,
                          (encryptionType == ENC_TYPE_NONE) ? ' ' : '*',
                          ssid.c_str());
-        yield();
+        esp_resume();
     }
 #endif
 }

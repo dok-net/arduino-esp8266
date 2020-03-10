@@ -28,6 +28,7 @@ typedef void (*discard_cb_t)(void*, ClientContext*);
 
 extern "C" void esp_yield();
 extern "C" void esp_schedule();
+extern "C" void esp_resume();
 
 #include "DataSource.h"
 
@@ -348,7 +349,7 @@ public:
                 last_sent = millis();
             }
 
-            yield(); // from sys or os context
+            esp_resume(); // from sys or os context
 
             if ((state() != ESTABLISHED) || (sndbuf == TCP_SND_BUF)) {
                 break;

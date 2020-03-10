@@ -124,6 +124,11 @@ extern "C" IRAM_ATTR void esp_schedule() {
     ets_post(LOOP_TASK_PRIORITY, 0, 0);
 }
 
+extern "C" IRAM_ATTR void esp_resume() {
+    esp_schedule();
+    esp_yield();
+}
+
 extern "C" void __yield() {
     if (can_yield()) {
         esp_schedule();

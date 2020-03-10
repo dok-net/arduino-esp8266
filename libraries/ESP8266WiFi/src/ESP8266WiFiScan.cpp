@@ -38,6 +38,7 @@ extern "C" {
 #include "debug.h"
 
 extern "C" void esp_schedule();
+extern "C" void esp_resume();
 extern "C" void esp_yield();
 
 // -----------------------------------------------------------------------------------------------------------------------
@@ -94,7 +95,7 @@ int8_t ESP8266WiFiScanClass::scanNetworks(bool async, bool show_hidden, uint8 ch
         ESP8266WiFiScanClass::_scanStarted = true;
 
         if(ESP8266WiFiScanClass::_scanAsync) {
-            yield(); // time for the OS to trigger the scan
+            esp_resume(); // time for the OS to trigger the scan
             return WIFI_SCAN_RUNNING;
         }
 

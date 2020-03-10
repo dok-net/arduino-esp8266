@@ -29,6 +29,7 @@ extern "C" {
 
 extern void ets_delay_us(uint32_t us);
 extern void esp_schedule();
+extern void esp_resume();
 extern void esp_yield();
 
 static os_timer_t delay_timer;

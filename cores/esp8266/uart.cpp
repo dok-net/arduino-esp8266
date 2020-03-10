@@ -48,6 +48,8 @@
 #include "user_interface.h"
 #include "uart_register.h"
 
+extern "C" void esp_resume();
+
 #define MODE2WIDTH(mode) (((mode%16)>>2)+5)
 #define MODE2STOP(mode) (((mode)>>5)+1)
 #define MODE2PARITY(mode) (mode%4)
@@ -529,7 +531,7 @@ uart_wait_tx_empty(uart_t* uart)
         return;
 
     while(uart_tx_fifo_available(uart->uart_nr) > 0)
-        yield();
+        esp_resume();
 
 }
 
@@ -893,7 +895,7 @@ inline void
 uart_write_char_delay(const int uart_nr, char c)
 {
     while(uart_tx_fifo_full(uart_nr))
-        yield();
+        esp_resume();
 
     USF(uart_nr) = c;
 
