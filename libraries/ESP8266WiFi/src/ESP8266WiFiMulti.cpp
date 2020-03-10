@@ -91,7 +91,7 @@ static wl_status_t waitWiFiConnect(uint32_t connectTimeoutMs)
     // Wait for WiFi status change or timeout
     do {
         // Refresh watchdog
-        delay(0);
+        yield();
 
         // Get WiFi status
         status = WiFi.status();
@@ -249,7 +249,7 @@ int8_t ESP8266WiFiMulti::startScan()
     // Wait for WiFi scan change or timeout
     do {
         // Refresh watchdog
-        delay(0);
+        yield();
 
         // Check scan timeout which may occur when scan does not report completion
         if (scanTimeout) {
@@ -509,7 +509,7 @@ void ESP8266WiFiMulti::printWiFiScan()
                          rssi,
                          (encryptionType == ENC_TYPE_NONE) ? ' ' : '*',
                          ssid.c_str());
-        delay(0);
+        yield();
     }
 #endif
 }
