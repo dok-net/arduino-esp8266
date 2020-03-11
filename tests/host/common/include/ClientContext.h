@@ -26,6 +26,7 @@ class WiFiClient;
 
 extern "C" void esp_yield();
 extern "C" void esp_schedule();
+extern "C" void esp_resume();
 
 #include <include/DataSource.h>
 
