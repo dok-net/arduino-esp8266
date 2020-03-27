@@ -26,11 +26,9 @@ class WiFiClient;
 
 typedef void (*discard_cb_t)(void*, ClientContext*);
 
-extern "C" void esp_yield();
-extern "C" void esp_schedule();
-extern "C" void esp_resume();
-
 #include "DataSource.h"
+
+#include <coredecls.h>
 
 bool getDefaultPrivateGlobalSyncValue ();
 

@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <coredecls.h>
 #include <WiFiClient.h>
 #include <WiFiServer.h>
 #include <ESP8266WebServer.h>
@@ -7,8 +8,6 @@
 #include <FS.h>
 #include "StreamString.h"
 #include "ESP8266HTTPUpdateServer.h"
-
-extern "C" void esp_resume();
 
 namespace esp8266httpupdateserver {
 using namespace esp8266webserver;

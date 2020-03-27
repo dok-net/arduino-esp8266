@@ -26,6 +26,8 @@
 #include "ESP8266WiFiGeneric.h"
 #include "ESP8266WiFiScan.h"
 
+#include <coredecls.h>
+
 extern "C" {
 #include "c_types.h"
 #include "ets_sys.h"
@@ -36,10 +38,6 @@ extern "C" {
 }
 
 #include "debug.h"
-
-extern "C" void esp_schedule();
-extern "C" void esp_resume();
-extern "C" void esp_yield();
 
 // -----------------------------------------------------------------------------------------------------------------------
 // ---------------------------------------------------- Private functions ------------------------------------------------

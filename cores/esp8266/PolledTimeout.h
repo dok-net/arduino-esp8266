@@ -27,8 +27,7 @@
 #include <limits>                  // std::numeric_limits
 #include <type_traits>             // std::is_unsigned
 #include <core_esp8266_features.h>
-
-extern "C" void esp_resume();
+#include <coredecls.h>
 
 namespace esp8266
 {

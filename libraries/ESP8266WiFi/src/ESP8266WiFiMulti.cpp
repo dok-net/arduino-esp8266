@@ -25,10 +25,9 @@
 
 #include "PolledTimeout.h"
 #include "ESP8266WiFiMulti.h"
+#include <coredecls.h>
 #include <limits.h>
 #include <string.h>
-
-extern "C" void esp_resume();
 
 /**
  * @brief Print WiFi status

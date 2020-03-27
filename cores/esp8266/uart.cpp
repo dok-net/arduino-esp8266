@@ -41,14 +41,13 @@
  *
  */
 #include "Arduino.h"
+#include "coredecls.h"
 #include <pgmspace.h>
 #include "gdb_hooks.h"
 #include "uart.h"
 #include "esp8266_peri.h"
 #include "user_interface.h"
 #include "uart_register.h"
-
-extern "C" void esp_resume();
 
 #define MODE2WIDTH(mode) (((mode%16)>>2)+5)
 #define MODE2STOP(mode) (((mode)>>5)+1)

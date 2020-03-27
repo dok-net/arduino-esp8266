@@ -22,13 +22,12 @@
  *
  */
 #include <Arduino.h>
+#include <coredecls.h>
 
 #include "ESP8266HTTPClient.h"
 #include <ESP8266WiFi.h>
 #include <StreamString.h>
 #include <base64.h>
-
-extern "C" void esp_resume();
 
 /**
  * constructor
