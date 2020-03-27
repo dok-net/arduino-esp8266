@@ -124,6 +124,10 @@ extern "C" IRAM_ATTR void esp_schedule() {
     ets_post(LOOP_TASK_PRIORITY, 0, 0);
 }
 
+// Replacement for delay(0). In CONT, same as yield(). Whereas yield() panics
+// in SYS, esp_resume() is safe to call and only schedules CONT. Use yield()
+// whereever only called from CONT, use esp_resume() if code is called from SYS
+// or both CONT and SYS.
 extern "C" IRAM_ATTR void esp_resume() {
     esp_schedule();
     esp_yield();
