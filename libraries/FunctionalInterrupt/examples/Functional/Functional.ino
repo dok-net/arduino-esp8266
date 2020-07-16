@@ -34,7 +34,7 @@ class Button {
     }
 
     static void IRAM_ATTR buttonIsr_static(void* const self) {
-      static_cast<Button* const>(self)->buttonIsr();
+      static_cast<Button*>(self)->buttonIsr();
     }
 
     uint32_t checkPressed() {
