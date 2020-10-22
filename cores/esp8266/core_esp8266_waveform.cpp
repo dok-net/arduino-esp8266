@@ -144,7 +144,7 @@ int startWaveformClockCycles(uint8_t pin, uint32_t timeHighCycles, uint32_t time
       }
     }
     while (waveformToEnable) {
-      delay(0); // Wait for waveform to update
+      yield(); // Wait for waveform to update
     }
   }
 

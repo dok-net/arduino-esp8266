@@ -29,6 +29,8 @@ typedef void (*discard_cb_t)(void*, ClientContext*);
 #include "DataSource.h"
 #include <coredecls.h>
 
+#include <coredecls.h>
+
 bool getDefaultPrivateGlobalSyncValue ();
 
 class ClientContext
@@ -344,7 +346,7 @@ public:
                 last_sent = millis();
             }
 
-            delay(0); // from sys or os context
+            esp_resume(); // from sys or os context
 
             if ((state() != ESTABLISHED) || (sndbuf == TCP_SND_BUF)) {
                 break;

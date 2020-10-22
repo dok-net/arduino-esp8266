@@ -27,6 +27,8 @@
 #include "ESP8266WiFiSTA.h"
 #include "PolledTimeout.h"
 
+#include <coredecls.h>
+
 #include "c_types.h"
 #include "ets_sys.h"
 #include "os_type.h"

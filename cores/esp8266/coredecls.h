@@ -16,6 +16,7 @@ bool can_yield();
 void esp_yield();
 void esp_delay(unsigned long ms);
 void esp_schedule();
+void esp_resume();
 void tune_timeshift64 (uint64_t now_us);
 void disable_extra4k_at_link_time (void) __attribute__((noinline));
 bool sntp_set_timezone_in_seconds(int32_t timezone);

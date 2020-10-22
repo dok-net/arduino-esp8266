@@ -26,6 +26,8 @@
 #include "ESP8266WiFiGeneric.h"
 #include "ESP8266WiFiScan.h"
 
+#include <coredecls.h>
+
 extern "C" {
 #include "c_types.h"
 #include "ets_sys.h"
@@ -37,7 +39,6 @@ extern "C" {
 
 #include "debug.h"
 #include <coredecls.h>
-
 // -----------------------------------------------------------------------------------------------------------------------
 // ---------------------------------------------------- Private functions ------------------------------------------------
 // -----------------------------------------------------------------------------------------------------------------------
@@ -92,7 +93,7 @@ int8_t ESP8266WiFiScanClass::scanNetworks(bool async, bool show_hidden, uint8 ch
         ESP8266WiFiScanClass::_scanStarted = true;
 
         if(ESP8266WiFiScanClass::_scanAsync) {
-            delay(0); // time for the OS to trigger the scan
+            esp_resume(); // time for the OS to trigger the scan
             return WIFI_SCAN_RUNNING;
         }
 

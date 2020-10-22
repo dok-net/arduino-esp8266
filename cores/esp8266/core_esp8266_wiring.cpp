@@ -24,10 +24,9 @@
 #include "osapi.h"
 #include "user_interface.h"
 #include "coredecls.h"
+#include "coredecls.h"
 
 extern "C" {
-
-extern void ets_delay_us(uint32_t us);
 
 static os_timer_t micros_overflow_timer;
 static uint32_t micros_at_last_overflow_tick = 0;
