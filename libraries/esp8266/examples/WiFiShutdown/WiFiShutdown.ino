@@ -103,7 +103,7 @@ void setup() {
   WiFi.persistent(false);
   startup = millis();
   Serial.begin(115200);
-  settimeofday_cb(timeset_cb);
+  settimeofday_cb(static_cast<TrivialCB>(timeset_cb));
 
   // prepare non volatile user structure
   if (crc32(&nv->data, sizeof(nv->data)) != nv->crc) {
