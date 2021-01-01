@@ -26,11 +26,10 @@ class WiFiClient;
 
 typedef void (*discard_cb_t)(void*, ClientContext*);
 
-extern "C" void esp_yield();
-extern "C" void esp_schedule();
-
 #include <assert.h>
 #include <StreamDev.h>
+
+#include <coredecls.h>
 
 bool getDefaultPrivateGlobalSyncValue ();
 
@@ -349,7 +348,7 @@ public:
                 last_sent = millis();
             }
 
-            delay(0); // from sys or os context
+            esp_break(); // from sys or os context
 
             if ((state() != ESTABLISHED) || (sndbuf == TCP_SND_BUF)) {
                 break;
